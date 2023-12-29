@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>寶可夢對對碰</title>
+  <link rel="icon" href="./pokemon/Poke_Ball.webp" type="image/x-icon">
+  <style>
+    body {
+      background-image: url(./pokemon/bg01.png);
+      background-repeat: no-repeat;
+      background-position: 50% 50%;
+      background-size: cover;
+      /* background-attachment: fixed */
+    }
+
+    #game {
+      width: 100%;
+      height: calc(100vh - 330px);
+      margin: auto;
+      padding: 0 20px 0 55px;
+      box-sizing: border-box;
+    }
+
+    .card {
+      width: 100px;
+      height: 180px;
+      position: relative;
+      float: left;
+      margin: 10px;
+      transition: transform 0.7s;
+      transform-style: preserve-3d;
+    }
+
+    .card-front {
+      width: 100%;
+      height: 100%;
+      background-image: url('./pokemon/1s.png');
+      background-repeat: no-repeat;
+      background-size: contain;
+      background-position: center;
+      position: absolute;
+      backface-visibility: hidden;
+    }
+
+    .card-back {
+      width: 100%;
+      height: 100%;
+      background-image: url('./pokemon/back.png');
+      background-repeat: no-repeat;
+      background-size: contain;
+      background-position: center;
+      position: absolute;
+      transform: rotateY(180deg);
+      backface-visibility: hidden;
+    }
+
+    .flip-card {
+      transform: rotateY(180deg);
+    }
+
+    #left {
+      margin: 25px 0 0 75px;
+      padding: 0 10px;
+      width: calc(50vw - 120px);
+      height: 180px;
+      float: left;
+      clear: both;
+      background-color: rgba(0, 0, 0, 0.3);
+      box-sizing: border-box;
+      border-radius: 20px;
+      position: relative;
+      color: rgb(217, 217, 233);
+      text-shadow: 3px 3px 5px black;
+      font-size: 20px;
+      /* box-shadow: 10px -10px 15px rgb(250, 253, 198); */
+    }
+
+    #right {
+      margin: 25px 55px 0 0;
+      padding: 0 10px;
+      width: calc(50vw - 120px);
+      height: 180px;
+      float: right;
+      background-color: rgba(0, 0, 0, 0.3);
+      box-sizing: border-box;
+      border-radius: 20px;
+      position: relative;
+      color: rgb(217, 217, 233);
+      text-shadow: 3px 3px 5px black;
+      font-size: 20px;
+      /* box-shadow: 10px -10px 15px rgb(250, 253, 198); */
+    }
+
+    .leftPlayer {
+      cursor: url('./pokemon/cursor_left_hand.png') 45 5, auto;
+    }
+
+    .rightPlayer {
+      cursor: url('./pokemon/cursor_right_hand.png') 15 5, auto;
+    }
+
+    #player1,
+    #player2 {
+      padding: 15px;
+      line-height: 20px;
+      position: absolute;
+    }
+
+    #left #img {
+      width: 200px;
+      top: 40px;
+      left: -70px;
+      position: absolute;
+    }
+
+    #right #img {
+      width: 200px;
+      top: 40px;
+      float: right;
+      position: absolute;
+      right: -60px;
+    }
+
+    #pokemon {
+      width: 84%;
+      height: 125px;
+      position: relative;
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    #left #pokemon {
+      left: 85px;
+      top: 22%;
+    }
+
+    #right #pokemon {
+      left: 20px;
+      top: 22%;
+    }
+
+    #pokemon img {
+      height: 62.5px;
+      position: relative;
+      float: left;
+    }
+
+    .disableClick {
+      pointer-events: none;
+    }
+
+    .sweet-alert-container {
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- <div class="card">
+    <div class="card-front"></div>
+    <div class="card-back"></div>
+  </div> -->
+  <div id="game">
+
+  </div>
+
+  <div id="left">
+    <span id="player1">name: -</span>
+    <div id="pokemon"></div>
+    <img src="./pokemon/left-player.png" id="img">
+  </div>
+
+  <div id="right">
+    <span id="player2">name: -</span>
+    <div id="pokemon"></div>
+    <img src="./pokemon/right-player.png" id="img">
+  </div>
+
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.9.0/sweetalert2.all.min.js'
+    integrity='sha512-LTmGiRLYz7G5Sxr4MMXGaOfia3kGZKGAlXzrSCGc4GBGxymu1RGwhFFGwiOQUm+bJOGlV0AmHd1S7zeFlwzkFQ=='
+    crossorigin='anonymous'></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js'
+    integrity='sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=='
+    crossorigin='anonymous'></script>
+  <script>
+    // 產生卡片
+    for (let i = 0; i < 39; i++) {
+      $('#game').append(`
+      <div class="card flip-card">
+        <div class="card-front"></div>
+        <div class="card-back"></div>
+      </div>
+      `)
+      const number = i % 20 + 1
+      if (i <= 18) {
+        $('.card-front').eq(i).css('background-image', `url('./pokemon/${number}s.png')`)
+      }
+      if (i == 19) {
+        $('.card-front').eq(i).css('background-image', `url('./pokemon/${number}s.png')`)
+      }
+      if (i >= 20) {
+        $('.card-front').eq(i).css('background-image', `url('./pokemon/${number}s.png')`)
+      }
+      $('.card').eq(i).attr('data-number', number)
+    }
+
+    // shuffle
+    for (let i = 0; i < 60; i++) {
+      const randomA = Math.round(Math.random() * 39)
+      const randomB = Math.round(Math.random() * 39)
+      $('.card').eq(randomA).insertAfter($('.card').eq(randomB))
+    }
+
+    // 設定玩家手手
+    let player = "right"
+    let winner
+    let loser
+    let score
+    function playerHand(player) {
+      // $('html').css({ 'cursor': 'default' })
+      $('#left').css({ 'box-shadow': 'none' })
+      $('#right').css({ 'box-shadow': 'none' })
+      if (player === "left") {
+        $('html').removeClass('rightPlayer').addClass('leftPlayer')
+        $('#left').css({ 'box-shadow': '0px 9px 30px 0px rgba(255,149,5,0.9)' })
+      }
+      if (player === "right") {
+        $('html').removeClass('leftPlayer').addClass('rightPlayer')
+        $('#right').css({ 'box-shadow': '0px 9px 30px 0px rgba(255,149,5,0.9)' })
+      }
+    }
+    playerHand(player)
+
+
+    // 點擊事件
+    $('#game').on('click', '.card', function (index) {
+
+      if ($(this).attr('data-number') == 20) {
+        $(this).addClass('paired')
+        $(this).fadeTo(1000, 0)
+        $(`#${player} #pokemon`).append(`<img src="./pokemon/20s.png">`)
+        Swal.fire({
+          imageUrl: `./pokemon/20s.png`,
+          background: `#fff url(./pokemon/bg20.png)`,
+          imageAlt: "pokemon",
+          showConfirmButton: false,
+        });
+      }
+
+      if (
+        $('.card:not(.flip-card)').length < 2 &&
+        !$(this).hasClass('paired') &&
+        $(this).hasClass('flip-card')
+      ) {
+        $(this).removeClass('flip-card')
+      }
+
+      if ($('.card:not(.flip-card)').length === 2) {
+        // let player = "left"
+        if (
+          $('.card:not(.flip-card)').eq(0).attr('data-number') ===
+          $('.card:not(.flip-card)').eq(1).attr('data-number')
+        ) {
+          $('.card:not(.flip-card)').fadeTo(1000, 0)
+          $('.card:not(.flip-card)').addClass('paired')
+
+          const win = ($('.card:not(.flip-card)').eq(0).attr('data-number') ===
+            $('.card:not(.flip-card)').eq(1).attr('data-number'))
+
+          if (win) {
+            setTimeout(() => {
+              player = whoseMove(player, win)
+              playerHand(player)
+            }, 1000)
+          }
+
+          Swal.fire({
+            imageUrl: `./pokemon/${$(this).attr('data-number')}b.png`,
+            background: `#fff url(./pokemon/bg${$(this).attr('data-number')}.png)`,
+            imageAlt: "pokemon",
+            showConfirmButton: false
+          });
+
+          $(`#${player} #pokemon`).append(`<img src="./pokemon/${$(this).attr('data-number')}b.png">`)
+          $('#game').addClass('disableClick')
+          setTimeout(() => {
+            $('#game').removeClass('disableClick')
+          }, 1000)
+
+        } else {
+          setTimeout(() => {
+            player = whoseMove(player, false)
+            playerHand(player)
+            console.log(player)
+          }, 1000)
+        }
+
+        // 切換玩家的function
+        function whoseMove(player, win) {
+          return win ? player : (player === "left" ? "right" : "left")
+        }
+
+        setTimeout(function () {
+          $('.card:not(.flip-card)').addClass('flip-card')
+        }, 600)
+        // 結束遊戲
+        if ($('.card').length === $('.paired').length) {
+          $('#left').css({ 'box-shadow': 'none' })
+          $('#right').css({ 'box-shadow': 'none' })
+
+          let i = 0;
+          let j = 0
+
+          const leftBall = setInterval(() => {
+            $('#left #pokemon img').eq(i).attr('src', './pokemon/Poke_Ball.webp');
+            i++;
+
+            if (i === $('#left #pokemon img').length) {
+              clearInterval(leftBall);
+            }
+          }, 600);
+
+          const rightBall = setInterval(() => {
+            $('#right #pokemon img').eq(j).attr('src', './pokemon/Poke_Ball.webp');
+            j++;
+
+            if (j === $('#right #pokemon img').length) {
+              clearInterval(rightBall);
+            }
+          }, 600);
+
+          setTimeout(function () {
+            if ($('#right #pokemon img').length > $('#left #pokemon img').length) {
+              const P1Score = ($('#left #pokemon img').length) * 100
+              const P2Score = ($('#right #pokemon img').length) * 100
+              $('#right').css({ 'box-shadow': 'rgba(240, 46, 170, 0.4) 5px 5px, rgba(240, 46, 170, 0.3) 10px 10px, rgba(240, 46, 170, 0.2) 15px 15px, rgba(240, 46, 170, 0.1) 20px 20px, rgba(240, 46, 170, 0.05) 25px 25px' })
+
+              const winner = $('#player2').text().split(" ")[1]
+              const loser = $('#player1').text().split(" ")[1]
+              const score = P2Score
+              Fin(winner, score, loser)
+            } else if ($('#right #pokemon img').length === $('#left #pokemon img').length) {
+              const score = ($('#left #pokemon img').length) * 100
+              draw(score)
+            } else {
+              $('#left').css({ 'box-shadow': 'rgba(240, 46, 170, 0.4) 5px 5px, rgba(240, 46, 170, 0.3) 10px 10px, rgba(240, 46, 170, 0.2) 15px 15px, rgba(240, 46, 170, 0.1) 20px 20px, rgba(240, 46, 170, 0.05) 25px 25px' })
+
+              const winner = $('#player1').text().split(" ")[1]
+              const loser = $('#player2').text().split(" ")[1]
+              const score = P1Score
+              Fin(winner, score, loser)
+            }
+          }, 6000)
+        }
+      }
+    })
+
+    const Fin = (winner, score, loser) => {
+      Swal.fire({
+        heightAuto: false,
+        title: '恭喜過關',
+        icon: 'success',
+        html: `恭喜${winner} 獲得 ${score} 分<br>
+                ${loser} 請加油!`,
+        input: 'text',
+        allowOutsideClick: false,
+        showCloseButton: true,
+      })
+    }
+
+    const draw = (score) => {
+      Swal.fire({
+        heightAuto: false,
+        title: '恭喜過關',
+        icon: 'success',
+        html: `恭喜兩位 獲得 ${score} 分<br>
+        平手!`,
+        input: 'text',
+        allowOutsideClick: false,
+        showCloseButton: true,
+      })
+    }
+
+    // instruction
+
+    Swal.fire({
+      title: '寶可夢對對碰',
+      html: `<li>兩人對戰，配對成功的話可以再翻一次。</li>
+      <li>輪到對方的時候要把滑鼠讓出來噢!</li>
+      <li>翻到隱藏角色"皮卡丘"直接算配對成功！</li>`,
+      icon: 'info',
+      heightAuto: false,
+    }).then(function () {
+      // 玩家命名
+      Swal.fire({
+        title: '狗狗玩家',
+        input: 'text',
+        inputLabel: '你叫什麼名字',
+        inputPlaceholder: '請輸入你的名字',
+        heightAuto: false,
+      }).then(function (result) {
+        $('#player1').html(`name: ${result.value || '汪汪'}`)
+        Swal.fire({
+          title: '貓貓玩家',
+          input: 'text',
+          inputLabel: '你叫什麼名字',
+          inputPlaceholder: '請輸入你的名字',
+          heightAuto: false,
+        }).then(function (result) {
+          $('#player2').html(`name: ${result.value || '喵喵'}`)
+        })
+      })
+    })
+
+  </script>
+</body>
+
+</html>
